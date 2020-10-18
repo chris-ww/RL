@@ -12,7 +12,8 @@ from stable_baselines import A2C
 from stable_baselines import PPO2
 from stable_baselines.gail import generate_expert_traj
 from stable_baselines.gail import ExpertDataset
-from sklearn.model_selection import RandomizedSearchCV
+import numpy as np
+#from sklearn.model_selection import RandomizedSearchCV
 
 #Demonstration
 def human_expert(_obs):
@@ -31,9 +32,9 @@ def human_expert(_obs):
     
 #Demonstration
 def simple_expert(_obs):
-    state=np.reshape(_obs,(5,5))
-    x1,y1=np.where(state==1)
-    x2,y2=np.where(state==2)
+    state=np.reshape(_obs,(5,5,2))
+    x1,y1=np.where(state[:,:,0]==True)
+    x2,y2=np.where(state[:,:,1]==True)
     if(x1>x2):
         return 1
     if(y1>y2):
@@ -45,7 +46,7 @@ def simple_expert(_obs):
 
 
 
-generate_expert_traj(simple_expert, 'expert_game', env, n_episodes=10000)
+generate_expert_traj(simple_expert, 'expert_game', env, n_episodes=1000)
 
 dataset = ExpertDataset(expert_path= 'expert_game.npz',
                         traj_limitation=1, batch_size=100)
@@ -62,9 +63,9 @@ env.close()
 
 
 #DQN Policy
-model = A2C("MlpPolicy", env, verbose=1,learning_rate=5e-4)
-model.pretrain(dataset, n_epochs=5)
-model.learn(total_timesteps=int(1e4))
+model = DQN("MlpPolicy", env, verbose=1,learning_rate=5.5e-4)
+model.pretrain(dataset, n_epochs=10000)
+model.learn(total_timesteps=int(2e3))
 
 # 2. To check all env available, uninstalled ones are also shown
 obs = env.reset()
