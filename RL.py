@@ -13,6 +13,7 @@ from stable_baselines import PPO2
 from stable_baselines.gail import generate_expert_traj
 from stable_baselines.gail import ExpertDataset
 import numpy as np
+import pygame
 #from sklearn.model_selection import RandomizedSearchCV
 
 #Demonstration
@@ -67,18 +68,41 @@ model = DQN("MlpPolicy", env, verbose=1,learning_rate=5.5e-4)
 model.pretrain(dataset, n_epochs=10000)
 model.learn(total_timesteps=int(2e3))
 
-# 2. To check all env available, uninstalled ones are also shown
-obs = env.reset()
-for _ in range(500):
-    action, _states = model.predict(obs)
-    obs, rewards, dones, info = env.step(action)
-    env.render()
-    if dones==True:
-        obs = env.reset()  
-env.close()
+def demonstrate():
+    obs = env.reset()
+    for _ in range(500):
+        action, _states = model.predict(obs)
+        obs, rewards, dones, info = env.step(action)
+        env.render()
+        if dones==True:
+            obs = env.reset()  
+    env.close()
+
+def play_game():
+    done=False
+    obs = env.reset()
+    while(done==False):
+        env.render()
+        pressed_keys = pygame.key.get_pressed()
+        thisdict = {
+        "w": 3,
+        "a": 1,
+        "s": 2,
+        "d": 0
+        }
+        action=4
+        if pressed_keys[pygame.K_w]:
+            action=3
+        elif pressed_keys[pygame.K_s]:
+            action=2
+        elif pressed_keys[pygame.K_a]:
+            action=1
+        elif pressed_keys[pygame.K_d]:
+            action=0
+        print(sum(pressed_keys))        
+        obs, rewards, done, info = env.step(action)
+        env.render()
+    env.close()
 
 
 
-state,reward,done,info=env.step(env.action_space.sample())
-env.render()
-print(reward)
